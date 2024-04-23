@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use tokio::io::{self, AsyncReadExt};
+use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 pub struct Server {
@@ -47,6 +47,13 @@ impl Server {
                 break; // Connection closed by the client
             }
             buffer.extend_from_slice(&tmp_buffer[..n]);
+
+            // Assume that we've now received the complete HTTP request
+            // Here, you'd normally parse the request and generate a suitable response
+            let response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello world!";
+            socket.write_all(response.as_bytes()).await?;
+            socket.flush().await?;
+            break; // Send response and close the connection
         }
         println!("{}", String::from_utf8_lossy(&buffer));
         Ok(())
