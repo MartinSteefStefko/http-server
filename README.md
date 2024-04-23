@@ -16,7 +16,6 @@ This project is an asynchronous HTTP server using the Tokio framework in Rust. T
 ## Requirements
 
 - Rust (stable) - The project is built using Rust programming language. You can install Rust by following the instructions [here](https://www.rust-lang.org/tools/install).
-- Tokio - Tokio is a runtime for writing reliable asynchronous applications with Rust. It's added as a dependency in the `Cargo.toml` file and will be automatically installed when building the project.
 
 ## Usage
 
@@ -49,15 +48,14 @@ This project is an asynchronous HTTP server using the Tokio framework in Rust. T
 ## Example
 
 ```rust
-use async_tcp_server::Server;
-use std::sync::Arc;
+mod server;
+
+use server::Server;
 
 #[tokio::main]
 async fn main() {
-    // Create a new instance of the server
     let server = Server::new("127.0.0.1:8080".to_string());
-
-    // Start the server asynchronously
     server.run().await;
 }
+
 ```
