@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
+percent-encoding = "2.1.0"

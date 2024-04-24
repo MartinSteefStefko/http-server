@@ -1,3 +1,4 @@
+use crate::http::Request;
 use std::sync::Arc;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -36,26 +37,40 @@ impl Server {
         let mut buffer = Vec::new();
         loop {
             let mut tmp_buffer = vec![0; 1024];
-            let n = match socket.read(&mut tmp_buffer).await {
-                Ok(n) => n,
-                Err(e) => {
-                    eprintln!("Error reading from socket: {:?}", e);
-                    break;
-                }
-            };
+            let n = socket.read(&mut tmp_buffer).await?;
             if n == 0 {
                 break; // Connection closed by the client
             }
             buffer.extend_from_slice(&tmp_buffer[..n]);
 
-            // Assume that we've now received the complete HTTP request
-            // Here, you'd normally parse the request and generate a suitable response
-            let response = "HTTP/1.1 200 OK\r\nContent-Length: 12\r\n\r\nHello world!";
-            socket.write_all(response.as_bytes()).await?;
-            socket.flush().await?;
-            break; // Send response and close the connection
+            if buffer.ends_with(b"\r\n\r\n") {
+                break; // End of the HTTP header section
+            }
         }
-        println!("{}", String::from_utf8_lossy(&buffer));
+
+        let response = match Request::try_from(&buffer[..]) {
+            Ok(request) => {
+                println!("Received request: {:?}", request);
+                self.handle_request(&request)
+            }
+            Err(e) => {
+                println!("Failed to parse request: {:?}", e);
+                self.handle_bad_request(&e)
+            }
+        };
+
+        socket.write_all(response.as_bytes()).await?;
+        socket.flush().await?;
         Ok(())
+    }
+
+    fn handle_request(&self, request: &Request) -> String {
+        // Example response for demonstration
+        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello, world!".to_string()
+    }
+
+    fn handle_bad_request(&self, _e: &dyn std::error::Error) -> String {
+        // Basic bad request response
+        "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\n\r\nBad request".to_string()
     }
 }

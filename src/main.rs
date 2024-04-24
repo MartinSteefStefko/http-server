@@ -1,6 +1,9 @@
-mod server;
+#![allow(dead_code)]
 
 use server::Server;
+
+mod http;
+mod server;
 
 #[tokio::main]
 async fn main() {
