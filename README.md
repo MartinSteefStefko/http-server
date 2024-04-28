@@ -1,4 +1,4 @@
-# http-server
+# Sticxs
 
 A simple asynchronous HTTP server implemented in Rust using the Tokio runtime.
 
@@ -54,7 +54,7 @@ use server::Server;
 
 #[tokio::main]
 async fn main() {
-    let server = Server::new("127.0.0.1:8080".to_string());
+    let server = Server::new("127.0.0.1:8080");
     server.run().await;
 }
 

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter, Result};
 use std::io::{Result as IoResult, Write};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::SystemTime;
 
 use super::StatusCode;
 
@@ -57,6 +58,24 @@ impl Response {
             "\r\n{}",
             self.body.as_ref().unwrap_or(&"".to_string())
         )
+    }
+}
+
+impl Display for Response {
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        writeln!(
+            f,
+            "HTTP/1.1 {} {}",
+            self.status_code,
+            self.status_code.reason_phrase()
+        )?;
+        for (key, value) in &self.headers {
+            writeln!(f, "{}: {}", key, value)?;
+        }
+        if let Some(ref body) = self.body {
+            writeln!(f, "\r\n{}", body)?;
+        }
+        Ok(())
     }
 }
 
